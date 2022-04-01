@@ -3,6 +3,8 @@ package main
 import (
 	"UsersService/models"
 	"context"
+	"encoding/json"
+	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
 )
@@ -26,5 +28,30 @@ type handler struct {
 }
 
 func (h *handler) CreateUser(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	return events.APIGatewayProxyResponse{}, nil
+	request := request{}
+	err := json.Unmarshal([]byte(event.Body), &request)
+	if err != nil {
+		return events.APIGatewayProxyResponse{}, err
+	}
+
+	createdUser, err := h.Service.CreateUser(ctx, models.User{
+		UserName:      request.UserName,
+		CreditBalance: 0,
+		Email:         request.Email,
+	})
+	if err != nil {
+		return events.APIGatewayProxyResponse{}, err
+	}
+	_ = response{
+		ID:       createdUser.ID,
+		UserName: createdUser.UserName,
+		Email:    createdUser.Email,
+	}
+
+	return events.APIGatewayProxyResponse{
+		StatusCode: http.StatusCreated,
+		Headers: map[string]string{
+			"Content-Type": "application/json",
+		},
+	}, nil
 }

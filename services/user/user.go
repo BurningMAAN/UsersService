@@ -7,6 +7,7 @@ import (
 
 type repository interface {
 	CreateUser(ctx context.Context, user models.User) (models.User, error)
+	GetUser(ctx context.Context, userID string) (models.User, error)
 }
 
 type service struct {
@@ -20,9 +21,9 @@ func New(userRepository repository) *service {
 }
 
 func (s *service) CreateUser(ctx context.Context, user models.User) (models.User, error) {
-	return models.User{}, nil
+	return s.repository.CreateUser(ctx, user)
 }
 
 func (s *service) GetUser(ctx context.Context, userID string) (models.User, error) {
-	return models.User{}, nil
+	return s.repository.GetUser(ctx, userID)
 }
